@@ -34,10 +34,31 @@ class Cluster {
 }
 
 class kMeans {
-    constructor(k, maxIterations, minDistance, image) {
+    constructor(k, maxIterations, clusterRadius, image) {
         this.k = k;
         this.maxIterations = maxIterations;
-        this.minDistance = minDistance;
+        this.clusterRadius = clusterRadius;
+    }
+
+    assignCluster(pixel) {
+        let shortestDist = Infinity;
+        let nearestCluster;
+
+        this.clusters.forEach(cluster => {
+            distance = this.calculateDistance(cluster.centroid, pixel)
+            if (distance < shortestDist) {
+                shortestDist = distance;
+                nearestCluster = cluster;
+            }
+        })
+    }
+
+    calculateDistance(a, b) {
+        let dx = a[0] - b[0];
+        let dy = a[1] - b[1];
+        let dz = a[2] - b[2];
+
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     run(image) {
@@ -76,7 +97,8 @@ class kMeans {
             iterations++;
         }
 
-
+        let dominantColours = this.clusters.map(cluster => cluster.centroid);
+        return dominantColours;
     }
 }
 
