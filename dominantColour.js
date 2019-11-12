@@ -14,19 +14,32 @@ class Cluster {
 
     calculateCentroid() {
         // Collect all R, G, B values into their own arrays.
-        let R = this.pixels.map(pixel => {
+        let R = [];
+        let G = [];
+        let B = [];
+
+        // console.log(this.pixels);
+
+        this.pixels.forEach(pixel => {
             R.push(pixel[0]);
         });
-        let G = this.pixels.map(pixel => {
+        // console.log("R =", R);
+        this.pixels.forEach(pixel => {
             G.push(pixel[1]);
         });
-        let B = this.pixels.map(pixel => {
+        // console.log("G =", G);
+        this.pixels.forEach(pixel => {
             B.push(pixel[2]);
         });
+        // console.log("B =", B);
+
         // Calculate average R, G, B values from the given pixel data.
         R = R.reduce((a, b) => a + b, 0) / R.length;
+        // console.log(R);
         G = G.reduce((a, b) => a + b, 0) / G.length;
+        // console.log(G);
         B = B.reduce((a, b) => a + b, 0) / B.length;
+        // console.log(B);
         this.centroid = [R, G, B];
         this.pixels = [];
         return this.centroid;
@@ -34,10 +47,9 @@ class Cluster {
 }
 
 class kMeans {
-    constructor(image, k = 3, maxIterations = 5, clusterRadius = 5) {
+    constructor(image, k = 1, maxIterations = 3) {
         this.k = k;
         this.maxIterations = maxIterations;
-        this.clusterRadius = clusterRadius;
     }
 
     assignCluster(clusters, pixel) {
@@ -52,6 +64,8 @@ class kMeans {
                 nearestCluster = cluster;
             }
         });
+
+        nearestCluster.pixels.push(pixel);
     }
 
     calculateDistance(a, b) {
@@ -63,10 +77,10 @@ class kMeans {
     }
 
     run(image) {
-        this.image = "./sunset.jpg";
+        this.image = "./image.png";
 
         // Gather pixel data from image...
-        console.log("Reading image data...");
+        // console.log("Reading image data...");
         this.pixels = decode(fs.readFileSync("./sunset.jpg"));
         // ...then format it properly.
         this.pixels = formatPixelData(this.pixels);
@@ -80,11 +94,12 @@ class kMeans {
         for (let i = 0; i < this.k; i++) {
             this.clusters[i] = new Cluster();
             this.clusters[i].centroid = this.randomCentroids[i];
-            console.log(this.clusters);
+            // console.log(this.clusters);
         }
 
         let iterations = 0;
         while (iterations < this.maxIterations) {
+            // console.log(this.clusters);
             // Iterate through each pixel and assign it to a cluster.
             // It is assigned to the cluster with the closest centroid.
             this.pixels.forEach(pixel => {
@@ -100,6 +115,13 @@ class kMeans {
         }
 
         this.dominantColours = this.clusters.map(cluster => cluster.centroid);
+
+        this.dominantColours.forEach(colour => {
+            for (let i = 0; i < colour.length; i++) {
+                colour[i] = Math.round(colour[i]);
+            }
+        });
+
         return this.dominantColours;
     }
 }
@@ -112,12 +134,11 @@ function formatPixelData(pixels) {
     // console.log(pixelData);
 
     for (let i = 0; i < pixelData.length; i = i + 4) {
-        // console.log(pixelData.slice(i, i + 3));
         output.push(pixelData.slice(i, i + 3));
     }
 
     return output;
 }
 
-kMeans = new kMeans("./sunset.jpg");
+kMeans = new kMeans("./sunset.jpg", 3, 3);
 console.log(kMeans.run());
